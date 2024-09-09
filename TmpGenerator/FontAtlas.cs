@@ -2,16 +2,28 @@ using MsdfgenNet;
 
 namespace TmpGenerator;
 
-public class FontAtlas(int width, int height, int channels)
+public class FontAtlas
 {
-    public int Width { get; } = width;
-    public int Height { get; } = height;
-    public int Channels { get; } = channels;
+    public int Width { get; }
+    public int Height { get; }
+    public int Channels { get; }
     public Span<float> Data => data;
     public IReadOnlyList<AtlasElement> Elements => elements;
-    
-    private readonly float[] data = new float[width * height * channels];
+
+    private readonly float[] data;
     private readonly List<AtlasElement> elements = [];
+    
+    public FontAtlas(int width, int height, int channels)
+    {
+        Width = width;
+        Height = height;
+        Channels = channels;
+        data = new float[width * height * channels];
+        
+        // Fill data with negative infinity
+        for (var i = 0; i < data.Length; i++)
+            data[i] = float.NegativeInfinity;
+    }
 
     public void AddElement(Bitmap bitmap, int x, int y, int width, int height, int index = 0)
     {

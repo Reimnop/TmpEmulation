@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debug", "Debug\Debug.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TmpGenerator", "TmpGenerator\TmpGenerator.csproj", "{BB1CD504-3B9B-4B8A-846D-CD03472F1938}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TmpIO", "TmpIO\TmpIO.csproj", "{971F1997-87C6-477C-BA58-49B29B055E5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{BB1CD504-3B9B-4B8A-846D-CD03472F1938}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB1CD504-3B9B-4B8A-846D-CD03472F1938}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB1CD504-3B9B-4B8A-846D-CD03472F1938}.Release|Any CPU.Build.0 = Release|Any CPU
+		{971F1997-87C6-477C-BA58-49B29B055E5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{971F1997-87C6-477C-BA58-49B29B055E5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{971F1997-87C6-477C-BA58-49B29B055E5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{971F1997-87C6-477C-BA58-49B29B055E5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
