@@ -67,6 +67,7 @@ public static class TmpWriter
 
         using var dataStream = new GZipStream(stream, CompressionMode.Compress, true);
         writer.Write(MemoryMarshal.Cast<float, byte>(atlas.Data));
+        dataStream.Flush();
         
         return new RiffChunk("ATLS", memoryStream.ToArray());
     }
