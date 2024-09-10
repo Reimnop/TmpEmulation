@@ -53,7 +53,7 @@ public static class App
         var tmpAtlas = new TmpAtlas(atlas.Width, atlas.Height, atlas.Data.ToArray());
         var tmpFile = new TmpFile(tmpMetadata, tmpCharacters, tmpGlyphs, tmpAtlas);
         
-        using var stream = File.OpenWrite(options.Output);
+        using var stream = File.Open(options.Output, FileMode.Create);
         TmpWriter.Write(stream, tmpFile);
     }
 

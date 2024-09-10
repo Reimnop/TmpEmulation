@@ -33,7 +33,7 @@ public static class TmpWriter
         {
             array.Add(new SsbfObject
             {
-                ["character"] = character.Character,
+                ["character"] = (ushort) character.Character,
                 ["glyphId"] = character.GlyphId,
             });
         }
