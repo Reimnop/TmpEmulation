@@ -92,7 +92,15 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.SamplerParameteri(sampler, SamplerParameterI.TextureMagFilter, (int) TextureMagFilter.Linear);
         
         // Upload glyphs
-        const string text = "Whereas disregard and contempt for human rights have resulted.";
+        const string text = 
+            "No one shall be subjected to arbitrary arrest, detention or exile.\n" +
+            "Everyone is entitled in full equality to a fair and public hearing\n" +
+            "by an independent and impartial tribunal, in the determination of\n" +
+            "his rights and obligations and of any criminal charge against him.\n" +
+            "No one shall be subjected to arbitrary interference with his\n" +
+            "privacy, family, home or correspondence, nor to attacks upon his\n" +
+            "honour and reputation. Everyone has the right to the protection of\n" +
+            "the law against such interference or attacks.";
         var glyphs = GetGlyphs(tmpFile, text).ToArray();
         glyphCount = glyphs.Length;
         
@@ -139,6 +147,13 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
             
             foreach (var c in run.Text)
             {
+                if (c == '\n')
+                {
+                    x = 0.0f;
+                    y += tmp.Metadata.LineHeight;
+                    continue;
+                }
+                
                 var glyphNullable = GetGlyph(c);
                 if (!glyphNullable.HasValue)
                     continue;
