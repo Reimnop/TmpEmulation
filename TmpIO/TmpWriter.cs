@@ -23,6 +23,7 @@ public static class TmpWriter
         {
             ["name"] = metadata.Name,
             ["size"] = metadata.Size,
+            ["lineHeight"] = metadata.LineHeight,
             ["sdfRange"] = metadata.SdfRange,
         };
 

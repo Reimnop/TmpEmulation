@@ -24,6 +24,7 @@ public static class TmpRead
         => new(
             obj["name"].Get<string>(),
             obj["size"].Get<int>(),
+            obj["lineHeight"].Get<float>(),
             obj["sdfRange"].Get<float>()
         );
 

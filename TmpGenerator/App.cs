@@ -26,7 +26,7 @@ public static class App
                 .Select(x => (x.Id, x.Bitmap!)),
             options.Gap);
         
-        var tmpMetadata = new TmpMetadata(face.FamilyName, options.Size, (float) options.Range);
+        var tmpMetadata = new TmpMetadata(face.FamilyName, options.Size, face.Size.Metrics.Height.Value / 64.0f, (float) options.Range);
         var tmpCharacters = characterToGlyphId
             .Select(kvp => new TmpCharacter(kvp.Key, kvp.Value))
             .ToArray();
