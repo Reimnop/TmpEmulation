@@ -25,7 +25,7 @@ public class FontAtlas
             data[i] = float.NegativeInfinity;
     }
 
-    public void AddElement(Bitmap bitmap, int x, int y, int width, int height, int index = 0)
+    public void AddElement(Bitmap bitmap, int x, int y, int width, int height, int id = 0)
     {
         if (bitmap.Width != width || bitmap.Height != height)
             throw new ArgumentException("Bitmap dimensions do not match the specified dimensions");
@@ -47,6 +47,6 @@ public class FontAtlas
             }
         }
         
-        elements.Add(new AtlasElement(x, y, width, height, index));
+        elements.Add(new AtlasElement(x, y, width, height, id));
     }
 }

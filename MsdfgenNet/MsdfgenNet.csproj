@@ -13,8 +13,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />
-  </ItemGroup>
-
 </Project>

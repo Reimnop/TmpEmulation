@@ -1,5 +1,4 @@
-﻿using OpenTK.Mathematics;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using MsdfgenNet.Data;
 using MsdfgenNet.Enum;
 
@@ -23,19 +22,19 @@ internal static partial class Native
     internal static partial void msdfgen_EdgeSegment_getControlPoints(IntPtr edge, IntPtr points);
     
     [LibraryImport(LibraryName)]
-    internal static partial Vector2d msdfgen_EdgeSegment_point(IntPtr edge, double t);
+    internal static partial MsdfVector2 msdfgen_EdgeSegment_point(IntPtr edge, double t);
     
     [LibraryImport(LibraryName)]
-    internal static partial Vector2d msdfgen_EdgeSegment_direction(IntPtr edge, double t);
+    internal static partial MsdfVector2 msdfgen_EdgeSegment_direction(IntPtr edge, double t);
     
     [LibraryImport(LibraryName)]
-    internal static partial Vector2d msdfgen_EdgeSegment_directionChange(IntPtr edge, double t);
+    internal static partial MsdfVector2 msdfgen_EdgeSegment_directionChange(IntPtr edge, double t);
     
     [LibraryImport(LibraryName)]
-    internal static partial SignedDistance msdfgen_EdgeSegment_signedDistance(IntPtr edge, Vector2d origin, IntPtr t);
+    internal static partial SignedDistance msdfgen_EdgeSegment_signedDistance(IntPtr edge, MsdfVector2 origin, IntPtr t);
     
     [LibraryImport(LibraryName)]
-    internal static partial void msdfgen_EdgeSegment_distanceToPerpendicularDistance(IntPtr edge, IntPtr distance, Vector2d origin, double t);
+    internal static partial void msdfgen_EdgeSegment_distanceToPerpendicularDistance(IntPtr edge, IntPtr distance, MsdfVector2 origin, double t);
     
     [LibraryImport(LibraryName)]
     internal static partial int msdfgen_EdgeSegment_scanlineIntersections(IntPtr edge, IntPtr x, IntPtr dy, double y);
@@ -47,10 +46,10 @@ internal static partial class Native
     internal static partial void msdfgen_EdgeSegment_reverse(IntPtr edge);
     
     [LibraryImport(LibraryName)]
-    internal static partial void msdfgen_EdgeSegment_moveStartPoint(IntPtr edge, Vector2d to);
+    internal static partial void msdfgen_EdgeSegment_moveStartPoint(IntPtr edge, MsdfVector2 to);
     
     [LibraryImport(LibraryName)]
-    internal static partial void msdfgen_EdgeSegment_moveEndPoint(IntPtr edge, Vector2d to);
+    internal static partial void msdfgen_EdgeSegment_moveEndPoint(IntPtr edge, MsdfVector2 to);
     
     [LibraryImport(LibraryName)]
     internal static partial void msdfgen_EdgeSegment_splitInThirds(IntPtr edge, IntPtr part0, IntPtr part1, IntPtr part2);

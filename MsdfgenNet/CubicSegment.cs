@@ -1,6 +1,6 @@
+using MsdfgenNet.Data;
 using MsdfgenNet.Enum;
 using MsdfgenNet.Interop;
-using OpenTK.Mathematics;
 
 namespace MsdfgenNet;
 
@@ -10,7 +10,7 @@ public class CubicSegment : EdgeSegment
     {
     }
     
-    public CubicSegment(Vector2d p0, Vector2d p1, Vector2d p2, Vector2d p3, EdgeColor edgeColor = EdgeColor.White) 
+    public CubicSegment(MsdfVector2 p0, MsdfVector2 p1, MsdfVector2 p2, MsdfVector2 p3, EdgeColor edgeColor = EdgeColor.White) 
         : base(Native.msdfgen_CubicSegment_create(p0, p1, p2, p3, edgeColor))
     {
     }

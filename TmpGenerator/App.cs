@@ -1,6 +1,5 @@
 using MsdfgenNet;
 using MsdfgenNet.Data;
-using OpenTK.Mathematics;
 using SharpFont;
 using TmpIO;
 
@@ -14,40 +13,47 @@ public static class App
         using var face = freetype.NewFace(options.Input, 0);
         face.SetPixelSizes(0, (uint)options.Size);
 
-        const string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ~!@#$%^&*()_+-={}[]:\";'<>?,./\\|";
         
-        var characterToGlyphIndex = characters
-            .Select(x => (x, (int)face.GetCharIndex(x)))
-            .ToDictionary();
-        var glyphs = characterToGlyphIndex.Values
+        var characterToGlyphId = characters
+            .ToDictionary(x => x, x => (int)face.GetCharIndex(x));
+        var glyphIdToGlyph = characterToGlyphId.Values
             .Select(x => GetGlyph(x, face, options.Padding, options.Range))
-            .Append(GetGlyph(0, face, options.Padding, options.Range)) // Tofu
-            .ToList();
-        var atlas = AtlasBuilder.Build(glyphs.Select(x => x.Bitmap));
+            .ToDictionary(x => x.Id);
+        var atlas = AtlasBuilder.Build(
+            glyphIdToGlyph.Values
+                .Where(x => x.Bitmap is not null)
+                .Select(x => (x.Id, x.Bitmap!)));
         
         var tmpMetadata = new TmpMetadata(face.FamilyName, options.Size, (float) options.Range);
-        var tmpCharacters = characterToGlyphIndex
+        var tmpCharacters = characterToGlyphId
             .Select(kvp => new TmpCharacter(kvp.Key, kvp.Value))
             .ToArray();
-        var tmpGlyphs = atlas.Elements
-            .Select(element =>
+        var glyphIdToAtlasElement = atlas.Elements.ToDictionary(x => x.Id);
+        var tmpGlyphs = glyphIdToGlyph.Values
+            .Select(glyph =>
             {
-                var minX = element.X / (float) atlas.Width;
-                var minY = element.Y / (float) atlas.Height;
-                var maxX = (element.X + element.Width) / (float) atlas.Width;
-                var maxY = (element.Y + element.Height) / (float) atlas.Height;
-                var glyph = glyphs[element.Index];
+                if (glyphIdToAtlasElement.TryGetValue(glyph.Id, out var element))
+                {
+                    var minX = element.X / (float) atlas.Width;
+                    var minY = element.Y / (float) atlas.Height;
+                    var maxX = (element.X + element.Width) / (float) atlas.Width;
+                    var maxY = (element.Y + element.Height) / (float) atlas.Height;
+                    return new TmpGlyph(
+                        glyph.Id,
+                        glyph.Advance,
+                        glyph.BearingX, glyph.BearingY,
+                        glyph.Width, glyph.Height,
+                        minX, minY,
+                        maxX, maxY);
+                }
+                
                 return new TmpGlyph(
-                    element.Index,
-                    glyph.Advance,
-                    glyph.BearingX,
-                    glyph.BearingY,
-                    glyph.Width,
-                    glyph.Height,
-                    minX,
-                    minY,
-                    maxX,
-                    maxY);
+                    glyph.Id, 
+                    glyph.Advance, 
+                    glyph.BearingX, glyph.BearingY, 
+                    glyph.Width, glyph.Height, 
+                    0.0f, 0.0f, 0.0f, 0.0f);
             })
             .ToArray();
         var tmpAtlas = new TmpAtlas(atlas.Width, atlas.Height, atlas.Data.ToArray());
@@ -63,6 +69,9 @@ public static class App
         face.LoadGlyph((uint) glyphId, LoadFlags.Default, LoadTarget.Normal);
         var glyph = face.Glyph;
         var metrics = glyph.Metrics;
+
+        if (metrics.Width.Value == 0 || metrics.Height.Value == 0)
+            return new Glyph(glyphId, metrics.HorizontalAdvance.Value >> 6, 0, 0, 0, 0, null);
         
         // Build character shape from outline
         var outline = glyph.Outline;
@@ -83,17 +92,18 @@ public static class App
         var offsetY = -(metrics.HorizontalBearingY.Value - metrics.Height.Value) / 64.0 + padding;
         
         // Generate MSDF
-        using var projection = new Projection(Vector2d.One, new Vector2d(offsetX, offsetY));
+        using var projection = new Projection(new MsdfVector2(1.0, 1.0), new MsdfVector2(offsetX, offsetY));
         using var transformation = new SdfTransformation(projection, DistanceMapping.CreateRange(new MsdfgenNet.Data.Range(-range, range)));
         using var config = new MsdfGeneratorConfig(true, new ErrorCorrectionConfig());
         Msdfgen.GenerateMsdf(msdf, shape, transformation, config);
 
         return new Glyph(
-            msdf,
+            glyphId,
             metrics.HorizontalAdvance.Value >> 6,
             metrics.HorizontalBearingX.Value / 64.0f - padding,
             metrics.HorizontalBearingY.Value / 64.0f + padding,
             metrics.Width.Value / 64.0f + padding * 2.0f,
-            metrics.Height.Value / 64.0f + padding * 2.0f);
+            metrics.Height.Value / 64.0f + padding * 2.0f,
+            msdf);
     }
 }

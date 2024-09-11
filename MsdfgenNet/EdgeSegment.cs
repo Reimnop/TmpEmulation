@@ -1,7 +1,6 @@
 using MsdfgenNet.Data;
 using MsdfgenNet.Enum;
 using MsdfgenNet.Interop;
-using OpenTK.Mathematics;
 
 namespace MsdfgenNet;
 
@@ -15,17 +14,17 @@ public class EdgeSegment : NativeObject
         set => Native.msdfgen_EdgeSegment_setEdgeColor(Handle, value);
     }
     
-    public ReadOnlySpan<Vector2d> ControlPoints
+    public ReadOnlySpan<MsdfVector2> ControlPoints
     {
         get
         {
             if (controlPoints is null)
             {
                 var count = Native.msdfgen_EdgeSegment_getControlPointsCount(Handle);
-                var points = new Vector2d[count];
+                var points = new MsdfVector2[count];
                 unsafe
                 {
-                    fixed (Vector2d* pointsPtr = points)
+                    fixed (MsdfVector2* pointsPtr = points)
                         Native.msdfgen_EdgeSegment_getControlPoints(Handle, new IntPtr(pointsPtr));
                 }
                 controlPoints = points;
@@ -34,7 +33,7 @@ public class EdgeSegment : NativeObject
         }
     }
     
-    private Vector2d[]? controlPoints;
+    private MsdfVector2[]? controlPoints;
     
     internal EdgeSegment(IntPtr handle) : base(handle)
     {
@@ -46,19 +45,19 @@ public class EdgeSegment : NativeObject
         return EdgeSegmentHelper.CreateFromHandle(handle);
     }
     
-    public Vector2d Point(double t) 
+    public MsdfVector2 Point(double t) 
         => Native.msdfgen_EdgeSegment_point(Handle, t);
     
-    public Vector2d Direction(double t) 
+    public MsdfVector2 Direction(double t) 
         => Native.msdfgen_EdgeSegment_direction(Handle, t);
     
-    public Vector2d DirectionChange(double t) 
+    public MsdfVector2 DirectionChange(double t) 
         => Native.msdfgen_EdgeSegment_directionChange(Handle, t);
     
-    public unsafe SignedDistance SignedDistance(Vector2d origin, double t) 
+    public unsafe SignedDistance SignedDistance(MsdfVector2 origin, double t) 
         => Native.msdfgen_EdgeSegment_signedDistance(Handle, origin, new IntPtr(&t));
 
-    public unsafe void DistanceToPerpendicularDistance(ref SignedDistance distance, Vector2d origin, double t)
+    public unsafe void DistanceToPerpendicularDistance(ref SignedDistance distance, MsdfVector2 origin, double t)
     {
         fixed (SignedDistance* distancePtr = &distance)
             Native.msdfgen_EdgeSegment_distanceToPerpendicularDistance(Handle, new IntPtr(distancePtr), origin, t);
@@ -95,10 +94,10 @@ public class EdgeSegment : NativeObject
     public void Reverse() 
         => Native.msdfgen_EdgeSegment_reverse(Handle);
     
-    public void MoveStartPoint(Vector2d to)
+    public void MoveStartPoint(MsdfVector2 to)
         => Native.msdfgen_EdgeSegment_moveStartPoint(Handle, to);
     
-    public void MoveEndPoint(Vector2d to)
+    public void MoveEndPoint(MsdfVector2 to)
         => Native.msdfgen_EdgeSegment_moveEndPoint(Handle, to);
 
     public void SplitInThirds(out EdgeSegment part0, out EdgeSegment part1, out EdgeSegment part2)

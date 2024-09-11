@@ -1,17 +1,17 @@
+using MsdfgenNet.Data;
 using MsdfgenNet.Interop;
-using OpenTK.Mathematics;
 
 namespace MsdfgenNet;
 
 public class Projection : NativeObject
 {
-    public unsafe Vector2d Scale 
+    public unsafe MsdfVector2 Scale 
     {
         get => Native.msdfgen_Projection_getScale(Handle);
         set => Native.msdfgen_Projection_setScale(Handle, new IntPtr(&value));
     }
     
-    public unsafe Vector2d Translate 
+    public unsafe MsdfVector2 Translate 
     {
         get => Native.msdfgen_Projection_getTranslate(Handle);
         set => Native.msdfgen_Projection_setTranslate(Handle, new IntPtr(&value));
@@ -26,21 +26,21 @@ public class Projection : NativeObject
     {
     }
     
-    public unsafe Projection(Vector2d scale, Vector2d translate) 
+    public unsafe Projection(MsdfVector2 scale, MsdfVector2 translate) 
         : this(Native.msdfgen_Projection_createRange(new IntPtr(&scale), new IntPtr(&translate)))
     {
     }
     
-    public unsafe Vector2d Project(Vector2d coord)
+    public unsafe MsdfVector2 Project(MsdfVector2 coord)
         => Native.msdfgen_Projection_project(Handle, new IntPtr(&coord));
     
-    public unsafe Vector2d Unproject(Vector2d coord)
+    public unsafe MsdfVector2 Unproject(MsdfVector2 coord)
         => Native.msdfgen_Projection_unproject(Handle, new IntPtr(&coord));
     
-    public unsafe Vector2d ProjectVector(Vector2d vector)
+    public unsafe MsdfVector2 ProjectVector(MsdfVector2 vector)
         => Native.msdfgen_Projection_projectVector(Handle, new IntPtr(&vector));
     
-    public unsafe Vector2d UnprojectVector(Vector2d vector)
+    public unsafe MsdfVector2 UnprojectVector(MsdfVector2 vector)
         => Native.msdfgen_Projection_unprojectVector(Handle, new IntPtr(&vector));
     
     public double ProjectX(double x)

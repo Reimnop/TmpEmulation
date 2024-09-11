@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using MsdfgenNet;
-using OpenTK.Mathematics;
+using MsdfgenNet.Data;
 using SharpFont;
 
 namespace TmpGenerator;
@@ -11,7 +11,7 @@ public static class ShapeBuilder
     {
         public Shape Shape { get; } = shape;
         public Contour? CurrentContour { get; set; }
-        public Vector2d LastPoint { get; set; }
+        public MsdfVector2 LastPoint { get; set; }
     }
     
     public static Shape Build(Outline outline)
@@ -43,7 +43,7 @@ public static class ShapeBuilder
         var state = context.ToBuildState();
         var contour = state.Shape.AddContour();
         state.CurrentContour = contour;
-        state.LastPoint = to.ToVector2d();
+        state.LastPoint = to.ToMsdfVector2();
         return 0;
     }
 
@@ -51,10 +51,10 @@ public static class ShapeBuilder
     {
         var state = context.ToBuildState();
         state.ThrowIfCurrentContourIsNull(out var contour);
-        var segment = new LinearSegment(state.LastPoint, to.ToVector2d());
+        var segment = new LinearSegment(state.LastPoint, to.ToMsdfVector2());
         var holder = contour.AddEdge();
         holder.Segment = segment;
-        state.LastPoint = to.ToVector2d();
+        state.LastPoint = to.ToMsdfVector2();
         return 0;
     }
 
@@ -62,10 +62,10 @@ public static class ShapeBuilder
     {
         var state = context.ToBuildState();
         state.ThrowIfCurrentContourIsNull(out var contour);
-        var segment = new QuadraticSegment(state.LastPoint, control.ToVector2d(), to.ToVector2d());
+        var segment = new QuadraticSegment(state.LastPoint, control.ToMsdfVector2(), to.ToMsdfVector2());
         var holder = contour.AddEdge();
         holder.Segment = segment;
-        state.LastPoint = to.ToVector2d();
+        state.LastPoint = to.ToMsdfVector2();
         return 0;
     }
     
@@ -73,10 +73,10 @@ public static class ShapeBuilder
     {
         var state = context.ToBuildState();
         state.ThrowIfCurrentContourIsNull(out var contour);
-        var segment = new CubicSegment(state.LastPoint, control1.ToVector2d(), control2.ToVector2d(), to.ToVector2d());
+        var segment = new CubicSegment(state.LastPoint, control1.ToMsdfVector2(), control2.ToMsdfVector2(), to.ToMsdfVector2());
         var holder = contour.AddEdge();
         holder.Segment = segment;
-        state.LastPoint = to.ToVector2d();
+        state.LastPoint = to.ToMsdfVector2();
         return 0;
     }
     
@@ -94,8 +94,8 @@ public static class ShapeBuilder
         contour = state.CurrentContour ?? throw new InvalidOperationException("No current contour");
     }
     
-    private static Vector2d ToVector2d(this FTVector vector)
+    private static MsdfVector2 ToMsdfVector2(this FTVector vector)
     {
-        return new Vector2d(vector.X.Value / 64.0, vector.Y.Value / 64.0);
+        return new MsdfVector2(vector.X.Value / 64.0, vector.Y.Value / 64.0);
     }
 }

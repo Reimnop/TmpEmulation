@@ -1,6 +1,6 @@
+using MsdfgenNet.Data;
 using MsdfgenNet.Enum;
 using MsdfgenNet.Interop;
-using OpenTK.Mathematics;
 
 namespace MsdfgenNet;
 
@@ -10,7 +10,7 @@ public class LinearSegment : EdgeSegment
     {
     }
     
-    public LinearSegment(Vector2d p0, Vector2d p1, EdgeColor edgeColor = EdgeColor.White) 
+    public LinearSegment(MsdfVector2 p0, MsdfVector2 p1, EdgeColor edgeColor = EdgeColor.White) 
         : base(Native.msdfgen_LinearSegment_create(p0, p1, edgeColor))
     {
     }

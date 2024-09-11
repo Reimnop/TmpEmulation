@@ -1,6 +1,6 @@
+using MsdfgenNet.Data;
 using MsdfgenNet.Enum;
 using MsdfgenNet.Interop;
-using OpenTK.Mathematics;
 
 namespace MsdfgenNet;
 
@@ -10,7 +10,7 @@ public class QuadraticSegment : EdgeSegment
     {
     }
     
-    public QuadraticSegment(Vector2d p0, Vector2d p1, Vector2d p2, EdgeColor edgeColor = EdgeColor.White) 
+    public QuadraticSegment(MsdfVector2 p0, MsdfVector2 p1, MsdfVector2 p2, EdgeColor edgeColor = EdgeColor.White) 
         : base(Native.msdfgen_QuadraticSegment_create(p0, p1, p2, edgeColor))
     {
     }

@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="OpenTK" Version="5.0.0-pre.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TmpIO\TmpIO.csproj" />
   </ItemGroup>
 
