@@ -75,7 +75,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.DeleteShader(fragmentShader);
         
         // Load font
-        var fontStream = GetResourceStream("Resources.Arial.tmpe");
+        var fontStream = GetResourceStream("Resources.Inconsolata-Regular.tmpe");
         var tmpFile = TmpRead.Read(fontStream);
         
         fontSize = tmpFile.Metadata.Size;
@@ -92,7 +92,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.SamplerParameteri(sampler, SamplerParameterI.TextureMagFilter, (int) TextureMagFilter.Linear);
         
         // Upload glyphs
-        const string text = "Lorem <b>ipsum dolor <i>sit</b> amet, consectetur</i> adipiscing elit.";
+        const string text = "Whereas disregard and contempt for human rights have resulted.";
         var glyphs = GetGlyphs(tmpFile, text).ToArray();
         glyphCount = glyphs.Length;
         
@@ -175,7 +175,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.BindSampler(0, sampler);
         GL.Uniform1f(2, fontSize);
         GL.Uniform1f(3, sdfRange);
-        GL.Uniform4f(4, 1, (Vector4) Color4.Beige);
+        GL.Uniform4f(4, 1, (Vector4) Color4.White);
         GL.BindVertexArray(vao);
         GL.DrawArraysInstanced(PrimitiveType.Triangles, 0, 6, glyphCount);
         
