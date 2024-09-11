@@ -5,13 +5,13 @@ namespace TmpGenerator;
 
 public static class AtlasBuilder
 {
-    public static FontAtlas Build(IEnumerable<(int Id, Bitmap Bitmap)> bitmaps)
+    public static FontAtlas Build(IEnumerable<(int Id, Bitmap Bitmap)> bitmaps, int gap)
     {
         var bitmapIdToBitmap = bitmaps.ToDictionary();
         var channels = bitmapIdToBitmap.Values
             .EnsureAllEqual(x => x.Channels);
         var packingRectangles = bitmapIdToBitmap
-            .Select(kvp => new PackingRectangle(0u, 0u, (uint)kvp.Value.Width, (uint)kvp.Value.Height, kvp.Key))
+            .Select(kvp => new PackingRectangle(0u, 0u, (uint)(kvp.Value.Width + gap * 2), (uint)(kvp.Value.Height + gap * 2), kvp.Key))
             .ToArray();
         RectanglePacker.Pack(packingRectangles, out var bounds);
         
@@ -19,7 +19,7 @@ public static class AtlasBuilder
         foreach (var rect in packingRectangles)
         {
             var bitmap = bitmapIdToBitmap[rect.Id];
-            atlas.AddElement(bitmap, (int)rect.X, (int)rect.Y, bitmap.Width, bitmap.Height, rect.Id);
+            atlas.AddElement(bitmap, (int)(rect.X + gap), (int)(rect.Y + gap), bitmap.Width, bitmap.Height, rect.Id);
         }
         return atlas;
     }

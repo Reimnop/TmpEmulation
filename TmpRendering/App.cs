@@ -85,7 +85,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.SamplerParameteri(sampler, SamplerParameterI.TextureMagFilter, (int) TextureMagFilter.Linear);
         
         // Upload glyphs
-        const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+        const string text = "Lorem ipsum";
         var glyphs = GetGlyphs(tmpFile, text).ToArray();
         glyphCount = glyphs.Length;
         
@@ -137,7 +137,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
     {
         base.OnRenderFrame(args);
         
-        var translate = Matrix4.CreateScale(2.0f) * Matrix4.CreateTranslation(0.0f, 48.0f, 0.0f);
+        var translate = Matrix4.CreateScale(4.0f) * Matrix4.CreateTranslation(0.0f, 96.0f, 0.0f);
         var camera = CreateCameraMatrix(ClientSize);
         
         GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);

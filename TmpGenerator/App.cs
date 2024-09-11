@@ -23,7 +23,8 @@ public static class App
         var atlas = AtlasBuilder.Build(
             glyphIdToGlyph.Values
                 .Where(x => x.Bitmap is not null)
-                .Select(x => (x.Id, x.Bitmap!)));
+                .Select(x => (x.Id, x.Bitmap!)),
+            options.Gap);
         
         var tmpMetadata = new TmpMetadata(face.FamilyName, options.Size, (float) options.Range);
         var tmpCharacters = characterToGlyphId
