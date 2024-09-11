@@ -1,5 +1,9 @@
 using System.Runtime.InteropServices;
 using SimpleStructuredBinaryFormat;
+// ReSharper disable AssignNullToNotNullAttribute
+// ReSharper disable PossibleNullReferenceException
+
+#nullable disable
 
 namespace TmpIO;
 
