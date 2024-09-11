@@ -13,7 +13,7 @@ float median(float r, float g, float b) {
 void main() {
     vec3 msdf = texture(uFontAtlas, vUv).rgb;
     float distance = median(msdf.r, msdf.g, msdf.b);
-    float alpha = smoothstep(0.5, 0.7, distance);
+    float alpha = smoothstep(0.45, 0.55, distance);
     
     oFragColor = vec4(1.0, 1.0, 1.0, alpha);
 }
