@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace TmpParser;
 
-internal static partial class Parser
+public static partial class TagParser
 {
     private static readonly Dictionary<string, TagProcessor> Processors = new()
     {

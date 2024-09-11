@@ -81,7 +81,7 @@ public static class App
         shape.Normalize();
         
         // Fill in edge colors
-        EdgeColoring.ColorByDistance(shape, range);
+        EdgeColoring.ColorByDistance(shape, 3.0);
         
         // Initialize bitmap
         var width = (metrics.Width.Value >> 6) + (padding << 1);
@@ -94,8 +94,8 @@ public static class App
         
         // Generate MSDF
         using var projection = new Projection(new MsdfVector2(1.0, 1.0), new MsdfVector2(offsetX, offsetY));
-        using var transformation = new SdfTransformation(projection, DistanceMapping.CreateRange(new MsdfgenNet.Data.Range(-range, range)));
-        using var config = new MsdfGeneratorConfig(true, new ErrorCorrectionConfig());
+        using var transformation = new SdfTransformation(projection, DistanceMapping.CreateRange(new MsdfgenNet.Data.Range(-range * 0.5, range * 0.5)));
+        using var config = new MsdfGeneratorConfig(true, default);
         Msdfgen.GenerateMsdf(msdf, shape, transformation, config);
 
         return new Glyph(

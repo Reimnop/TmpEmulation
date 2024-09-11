@@ -3,5 +3,13 @@ using OpenTK.Mathematics;
 
 namespace TmpRendering;
 
-[StructLayout(LayoutKind.Sequential)]
-public record struct RenderGlyph(Vector2 Min, Vector2 Max, Vector2 MinUV, Vector2 MaxUV);
+[StructLayout(LayoutKind.Sequential, Size = 64)]
+public struct RenderGlyph(Vector2 min, Vector2 max, Vector2 minUV, Vector2 maxUV, Vector4 color, BoldItalic boldItalic)
+{
+    public Vector2 Min = min;
+    public Vector2 Max = max;
+    public Vector2 MinUV = minUV;
+    public Vector2 MaxUV = maxUV;
+    public Vector4 Color = color;
+    public BoldItalic BoldItalic = boldItalic;
+}

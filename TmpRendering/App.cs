@@ -1,10 +1,11 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using TmpIO;
+using TmpParser;
+using Color3 = TmpParser.Color3;
 
 namespace TmpRendering;
 
@@ -25,6 +26,9 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
     private int sampler;
     private int glyphBuffer;
     private int glyphCount;
+
+    private float fontSize;
+    private float sdfRange;
 
     protected override void OnLoad()
     {
@@ -74,6 +78,9 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         var fontStream = GetResourceStream("Resources.Arial.tmpe");
         var tmpFile = TmpRead.Read(fontStream);
         
+        fontSize = tmpFile.Metadata.Size;
+        sdfRange = tmpFile.Metadata.SdfRange;
+        
         // Upload font atlas
         fontTexture = GL.CreateTexture(TextureTarget.Texture2d);
         GL.TextureStorage2D(fontTexture, 1, SizedInternalFormat.Rgb32f, tmpFile.Atlas.Width, tmpFile.Atlas.Height);
@@ -85,7 +92,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.SamplerParameteri(sampler, SamplerParameterI.TextureMagFilter, (int) TextureMagFilter.Linear);
         
         // Upload glyphs
-        const string text = "Lorem ipsum";
+        const string text = "Lorem <b>ipsum dolor <i>sit</b> amet, consectetur</i> adipiscing elit.";
         var glyphs = GetGlyphs(tmpFile, text).ToArray();
         glyphCount = glyphs.Length;
         
@@ -113,23 +120,41 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         
         var x = 0.0f;
         var y = 0.0f;
-        foreach (var c in str)
+        foreach (var run in TagParser.Parse(str))
         {
-            var glyphNullable = GetGlyph(c);
-            if (!glyphNullable.HasValue)
-                continue;
-            var glyph = glyphNullable.Value;
-            if (glyph.Width != 0.0f && glyph.Height != 0.0f)
+            var colorAlpha = run.Style.Color;
+            var color = new Vector4(
+                colorAlpha.Rgb.HasValue 
+                    ? new Vector3(
+                        colorAlpha.Rgb.Value.R / 255.0f,
+                        colorAlpha.Rgb.Value.G / 255.0f,
+                        colorAlpha.Rgb.Value.B / 255.0f)
+                    : new Vector3(float.NaN), 
+                colorAlpha.A.HasValue
+                    ? colorAlpha.A.Value / 255.0f
+                    : float.NaN);
+            var bold = run.Style.Bold;
+            var italic = run.Style.Italic;
+            var boldItalic = (bold ? BoldItalic.Bold : BoldItalic.None) | (italic ? BoldItalic.Italic : BoldItalic.None);
+            
+            foreach (var c in run.Text)
             {
-                var minX = x + glyph.BearingX;
-                var minY = y - glyph.BearingY;
-                var maxX = minX + glyph.Width;
-                var maxY = minY + glyph.Height;
-                var minUV = new Vector2(glyph.MinX, glyph.MinY);
-                var maxUV = new Vector2(glyph.MaxX, glyph.MaxY);
-                yield return new RenderGlyph(new Vector2(minX, minY), new Vector2(maxX, maxY), minUV, maxUV);
+                var glyphNullable = GetGlyph(c);
+                if (!glyphNullable.HasValue)
+                    continue;
+                var glyph = glyphNullable.Value;
+                if (glyph.Width != 0.0f && glyph.Height != 0.0f)
+                {
+                    var minX = x + glyph.BearingX;
+                    var minY = y - glyph.BearingY;
+                    var maxX = minX + glyph.Width;
+                    var maxY = minY + glyph.Height;
+                    var minUV = new Vector2(glyph.MinX, glyph.MinY);
+                    var maxUV = new Vector2(glyph.MaxX, glyph.MaxY);
+                    yield return new RenderGlyph(new Vector2(minX, minY), new Vector2(maxX, maxY), minUV, maxUV, color, boldItalic);
+                }
+                x += glyph.Advance;
             }
-            x += glyph.Advance;
         }
     }
     
@@ -137,7 +162,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
     {
         base.OnRenderFrame(args);
         
-        var translate = Matrix4.CreateScale(4.0f) * Matrix4.CreateTranslation(0.0f, 96.0f, 0.0f);
+        var translate = Matrix4.CreateScale(1.0f) * Matrix4.CreateTranslation(0.0f, 32.0f, 0.0f);
         var camera = CreateCameraMatrix(ClientSize);
         
         GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
@@ -148,6 +173,9 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
         GL.UniformMatrix4f(0, 1, false, translate * camera);
         GL.BindTextureUnit(0, fontTexture);
         GL.BindSampler(0, sampler);
+        GL.Uniform1f(2, fontSize);
+        GL.Uniform1f(3, sdfRange);
+        GL.Uniform4f(4, 1, (Vector4) Color4.Beige);
         GL.BindVertexArray(vao);
         GL.DrawArraysInstanced(PrimitiveType.Triangles, 0, 6, glyphCount);
         
