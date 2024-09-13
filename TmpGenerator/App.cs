@@ -26,7 +26,13 @@ public static class App
                 .Select(x => (x.Id, x.Bitmap!)),
             options.Gap);
         
-        var tmpMetadata = new TmpMetadata(face.FamilyName, options.Size, face.Size.Metrics.Height.Value / 64.0f, (float) options.Range);
+        var tmpMetadata = new TmpMetadata(
+            face.FamilyName, 
+            options.Size, 
+            face.Size.Metrics.Height.Value / 64.0f, 
+            face.Size.Metrics.Ascender.Value / 64.0f,
+            face.Size.Metrics.Descender.Value / 64.0f,
+            (float) options.Range);
         var tmpCharacters = characterToGlyphId
             .Select(kvp => new TmpCharacter(kvp.Key, kvp.Value))
             .ToArray();
@@ -61,7 +67,7 @@ public static class App
         var tmpFile = new TmpFile(tmpMetadata, tmpCharacters, tmpGlyphs, tmpAtlas);
         
         using var stream = File.Open(options.Output, FileMode.Create);
-        TmpWriter.Write(stream, tmpFile);
+        TmpWrite.Write(stream, tmpFile);
     }
 
     private static Glyph GetGlyph(int glyphId, Face face, int padding, double range)

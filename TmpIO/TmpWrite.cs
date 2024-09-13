@@ -3,7 +3,7 @@ using SimpleStructuredBinaryFormat;
 
 namespace TmpIO;
 
-public static class TmpWriter
+public static class TmpWrite
 {
     public static void Write(Stream stream, TmpFile file)
     {
@@ -24,6 +24,8 @@ public static class TmpWriter
             ["name"] = metadata.Name,
             ["size"] = metadata.Size,
             ["lineHeight"] = metadata.LineHeight,
+            ["ascender"] = metadata.Ascender,
+            ["descender"] = metadata.Descender,
             ["sdfRange"] = metadata.SdfRange,
         };
 
