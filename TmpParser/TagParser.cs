@@ -11,6 +11,8 @@ public static partial class TagParser
         ["u"] = TagProcessors.ProcessUnderline,
         ["color"] = TagProcessors.ProcessColor,
         ["alpha"] = TagProcessors.ProcessAlpha,
+        ["pos"] = TagProcessors.ProcessPos,
+        ["cspace"] = TagProcessors.ProcessCSpace,
     };
     
     [GeneratedRegex(@"<(\/?)([^<>\n]+?)>")]

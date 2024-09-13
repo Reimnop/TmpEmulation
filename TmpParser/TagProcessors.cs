@@ -91,6 +91,31 @@ public static class TagProcessors
         return style with { Color = state.ColorStack.Peek() };
     }
     
+    public static Style? ProcessPos(bool close, string? value, Style style, TagParsingState state)
+    {
+        // TODO: Implement pos tag
+        return style;
+    }
+
+    public static Style? ProcessCSpace(bool close, string? value, Style style, TagParsingState state)
+    {
+        if (close)
+        {
+            var oldCSpace = state.CSpaceStack.Count == 0 ? default : state.CSpaceStack.Peek();
+            state.CSpaceStack.Pop();
+            return style with { CSpace = oldCSpace };
+        }
+        
+        if (string.IsNullOrWhiteSpace(value))
+            return null; // CSpace tag must have a value
+        
+        if (!float.TryParse(value, out var cSpace))
+            return null; // Invalid CSpace value
+        
+        state.CSpaceStack.Push(cSpace);
+        return style with { CSpace = cSpace };
+    }
+
     private static bool TryParseAlpha(string value, out byte alpha)
     {
         alpha = default;
