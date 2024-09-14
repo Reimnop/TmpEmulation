@@ -114,7 +114,7 @@ public static partial class TagParser
                 : state.ColorStack.Peek();
             var newColorAlpha = currentColorAlpha with { Rgb = rgb };
             state.ColorStack.Push(newColorAlpha);
-            return new ChangeStyleElement { Color = newColorAlpha };
+            return new StyleElement { Color = newColorAlpha };
         }
         
         // Decompose tag
@@ -131,19 +131,19 @@ public static partial class TagParser
         if (nameNormalized == "b")
         {
             state.BoldNestLevel += close ? -1 : 1;
-            return new ChangeStyleElement { Bold = state.BoldNestLevel > 0 };
+            return new StyleElement { Bold = state.BoldNestLevel > 0 };
         }
         
         if (nameNormalized == "i")
         {
             state.ItalicNestLevel += close ? -1 : 1;
-            return new ChangeStyleElement { Italic = state.ItalicNestLevel > 0 };
+            return new StyleElement { Italic = state.ItalicNestLevel > 0 };
         }
         
         if (nameNormalized == "u")
         {
             state.UnderlineNestLevel += close ? -1 : 1;
-            return new ChangeStyleElement { Underline = state.UnderlineNestLevel > 0 };
+            return new StyleElement { Underline = state.UnderlineNestLevel > 0 };
         }
 
         // Process color tags
@@ -154,7 +154,7 @@ public static partial class TagParser
                 if (state.ColorStack.Count == 0)
                     return new TextElement { Value = token.OriginalValue };
                 state.ColorStack.Pop();
-                return new ChangeStyleElement { Color = state.ColorStack.Count == 0 ? null : state.ColorStack.Peek() };
+                return new StyleElement { Color = state.ColorStack.Count == 0 ? null : state.ColorStack.Peek() };
             }
             
             if (string.IsNullOrWhiteSpace(value))
@@ -167,7 +167,7 @@ public static partial class TagParser
                 : state.ColorStack.Peek();
             var newColorAlpha = currentColorAlpha with { Rgb = rgb };
             state.ColorStack.Push(newColorAlpha);
-            return new ChangeStyleElement { Color = newColorAlpha };
+            return new StyleElement { Color = newColorAlpha };
         }
         
         // Process alpha tags
@@ -187,7 +187,7 @@ public static partial class TagParser
                 : state.ColorStack.Peek();
             var newColorAlpha = currentColorAlpha with { A = alpha };
             state.ColorStack.Push(newColorAlpha);
-            return new ChangeStyleElement { Color = newColorAlpha };
+            return new StyleElement { Color = newColorAlpha };
         }
         
         // Process cspace tags

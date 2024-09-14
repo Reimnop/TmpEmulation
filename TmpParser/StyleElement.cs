@@ -1,6 +1,6 @@
 namespace TmpParser;
 
-public class ChangeStyleElement : IElement
+public class StyleElement : IElement
 {
     public bool? Bold { get; set; }
     public bool? Italic { get; set; }
@@ -8,7 +8,7 @@ public class ChangeStyleElement : IElement
     public ColorAlpha? Color { get; set; }
 
     public override string ToString()
-        => $"ChangeStyleElement({
+        => $"StyleElement({
             string.Join(", ", Enumerable.Empty<string?>()
                 .Append(Bold.HasValue ? $"Bold: {Bold.Value}" : null)
                 .Append(Italic.HasValue ? $"Italic: {Italic.Value}" : null)
