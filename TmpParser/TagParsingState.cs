@@ -7,4 +7,5 @@ public class TagParsingState
     public int UnderlineNestLevel { get; set; }
     public Stack<float> CSpaceStack { get; } = [];
     public Stack<ColorAlpha> ColorStack { get; } = [];
+    public Stack<string> FontStack { get; } = [];
 }

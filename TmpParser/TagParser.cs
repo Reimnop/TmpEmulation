@@ -254,6 +254,23 @@ public static partial class TagParser
             
             return new SizeElement { Value = size };
         }
+
+        if (name == "font")
+        {
+            if (close)
+            {
+                var oldFont = state.FontStack.Count == 0
+                    ? null
+                    : state.FontStack.Pop();
+                return new FontElement { Value = oldFont };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            state.FontStack.Push(value);
+            return new FontElement { Value = value };
+        }
         
         return new TextElement { Value = token.OriginalValue };
     }
@@ -285,6 +302,8 @@ public static partial class TagParser
 
     private static bool TryDecomposeTag(string tag, [MaybeNullWhen(false)] out string name, out string? value)
     {
+        tag = tag.Trim();
+        
         var equalsSignIndex = tag.IndexOf('=');
         if (equalsSignIndex == -1)
         {
@@ -293,11 +312,14 @@ public static partial class TagParser
             return true;
         }
         
-        name = tag[..equalsSignIndex];
-        value = tag[(equalsSignIndex + 1)..];
+        name = tag[..equalsSignIndex].Trim();
+        value = tag[(equalsSignIndex + 1)..].Trim();
         
         if (string.IsNullOrWhiteSpace(name))
             return false;
+        
+        if (value is ['"', .., '"'])
+            value = value[1..^1];
         
         return true;
     }
