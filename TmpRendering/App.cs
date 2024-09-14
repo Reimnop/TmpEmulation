@@ -114,7 +114,7 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
 
     private static IEnumerable<RenderGlyph> GetGlyphs(TmpFile tmp, string str)
     {
-        var glyphLookup = tmp.Glyphs.ToDictionary(x => x.Id);
+        /* var glyphLookup = tmp.Glyphs.ToDictionary(x => x.Id);
         var characterLookup = tmp.Characters.ToDictionary(x => x.Character);
         
         TmpGlyph? GetGlyph(char c)
@@ -170,7 +170,8 @@ public class App() : GameWindow(GameWindowSettings, NativeWindowSettings)
                 }
                 x += glyph.Advance;
             }
-        }
+        } */
+        throw new NotImplementedException();
     }
     
     protected override void OnRenderFrame(FrameEventArgs args)

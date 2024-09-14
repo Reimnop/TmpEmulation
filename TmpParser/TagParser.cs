@@ -1,76 +1,309 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace TmpParser;
 
 public static partial class TagParser
 {
-    private static readonly Dictionary<string, TagProcessor> Processors = new()
+    private static readonly Dictionary<string, Color3> KnownColors = new()
     {
-        ["b"] = TagProcessors.ProcessBold,
-        ["i"] = TagProcessors.ProcessItalic,
-        ["u"] = TagProcessors.ProcessUnderline,
-        ["color"] = TagProcessors.ProcessColor,
-        ["alpha"] = TagProcessors.ProcessAlpha,
-        ["pos"] = TagProcessors.ProcessPos,
-        ["cspace"] = TagProcessors.ProcessCSpace,
+        ["black"] = Color3.ParseHex("000000"),
+        ["blue"] = Color3.ParseHex("0000FF"),
+        ["green"] = Color3.ParseHex("00FF00"),
+        ["orange"] = Color3.ParseHex("FFA500"),
+        ["purple"] = Color3.ParseHex("800080"),
+        ["red"] = Color3.ParseHex("FF0000"),
+        ["white"] = Color3.ParseHex("FFFFFF"),
+        ["yellow"] = Color3.ParseHex("FFFF00"),
     };
     
-    [GeneratedRegex(@"<(\/?)([^<>\n]+?)>")]
+    [GeneratedRegex(@"<([^<>\n]+?)>")]
     private static partial Regex GetTagRegex();
-    
-    public static IEnumerable<Run> Parse(string text)
+
+    public static IEnumerable<IToken> EnumerateTokens(string text)
     {
-        var start = 0;
-        var style = new Style();
-        var state = new TagParsingState();
         var regex = GetTagRegex();
-        foreach (Match match in regex.Matches(text))
+        var matches = regex.Matches(text);
+        var lastIndex = 0;
+        foreach (Match match in matches)
         {
-            var currentStyle = style;
-            
-            var close = match.Groups[1].Value == "/";
-            var tag = match.Groups[2].Value;
-            
-            if (tag.StartsWith('#'))
-                tag = $"color={tag}";
-            
-            var firstEqual = tag.IndexOf('=');
-            var name = firstEqual == -1 ? tag : tag[..firstEqual];
-            var value = firstEqual == -1 ? null : tag[(firstEqual + 1)..];
-            
-            // Skip closing tags with values, as they are invalid
-            if (close && !string.IsNullOrEmpty(value))
-                continue;
-            
-            // Remove quotes from values
-            if (value is ['"', .., '"'])
-                value = value[1..^1];
-            
-            // Trim and lowercase tag name and value
-            name = name.Trim().ToLowerInvariant();
-            value = value?.Trim().ToLowerInvariant();
-            
-            // Skip unknown tags
-            if (Processors.TryGetValue(name, out var processor))
+            if (match.Index > lastIndex)
+                yield return new TextToken(text.Substring(lastIndex, match.Index - lastIndex));
+
+            yield return new TagToken(match.Groups[1].Value, match.Value);
+            lastIndex = match.Index + match.Length;
+        }
+        
+        if (lastIndex < text.Length)
+            yield return new TextToken(text.Substring(lastIndex));
+    }
+
+    public static IEnumerable<IElement> EnumerateElements(IEnumerable<IToken> tokens)
+    {
+        var state = new TagParsingState();
+
+        foreach (var token in tokens)
+        {
+            var element = token switch
             {
-                var newStyle = processor(close, value, style, state);
-                if (!newStyle.HasValue)
-                    continue;
-                style = newStyle.Value;
+                TextToken textToken => new TextElement { Value = textToken.Value },
+                TagToken tagToken => GetTagElement(tagToken, state),
+                _ => throw new InvalidOperationException($"Unknown token type: {token.Type}")
+            };
+
+            if (element is TextElement textElement)
+            {
+                foreach (var lineElement in SplitTextElementToLines(textElement))
+                    yield return lineElement;
             }
             else
             {
-                continue;
+                yield return element;
             }
-            
-            // Return previous run
-            if (start < match.Index)
-                yield return new Run(text[start..match.Index], currentStyle);
-            
-            start = match.Index + match.Length;
+        }
+    }
+
+    public static IEnumerable<IEnumerable<IElement>> EnumerateLines(IEnumerable<IElement> elements)
+    {
+        using var enumerator = elements.GetEnumerator();
+        do
+        {
+            yield return EnumerateUntilLineBreak(enumerator);
+        } while (enumerator.MoveNext());
+    }
+
+    private static IEnumerable<IElement> EnumerateUntilLineBreak(IEnumerator<IElement> enumerator)
+    {
+        do
+        {
+            if (enumerator.Current is LineBreakElement)
+                break;
+            if (enumerator.Current is not null)
+                yield return enumerator.Current;
+        } while (enumerator.MoveNext());
+    }
+
+    private static IEnumerable<IElement> SplitTextElementToLines(TextElement element)
+    {
+        var lines = element.Value.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+        {
+            yield return new TextElement { Value = lines[i] };
+            if (i < lines.Length - 1)
+                yield return new LineBreakElement();
+        }
+    }
+
+    private static IElement GetTagElement(TagToken token, TagParsingState state)
+    {
+        var tagValue = token.Value
+            .Trim()
+            .ToLowerInvariant();
+        
+        if (string.IsNullOrWhiteSpace(tagValue))
+            return new TextElement { Value = token.OriginalValue };
+        
+        // Special case for #<hex> tags
+        if (tagValue.StartsWith("#"))
+        {
+            if (!TryParseColor(tagValue, out var rgb))
+                return new TextElement { Value = token.OriginalValue };
+            var currentColorAlpha = state.ColorStack.Count == 0
+                ? default
+                : state.ColorStack.Peek();
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb };
+            state.ColorStack.Push(newColorAlpha);
+            return new ChangeStyleElement { Color = newColorAlpha };
         }
         
-        if (start < text.Length)
-            yield return new Run(text[start..], style);
+        // Decompose tag
+        if (!TryDecomposeTag(tagValue, out var name, out var value))
+            return new TextElement { Value = token.OriginalValue };
+        
+        var (close, nameNormalized) = NormalizeName(name);
+        
+        // Process line break tags
+        if (nameNormalized == "br" && !close)
+            return new LineBreakElement();
+        
+        // Process bold, italic, underline tags
+        if (nameNormalized == "b")
+        {
+            state.BoldNestLevel += close ? -1 : 1;
+            return new ChangeStyleElement { Bold = state.BoldNestLevel > 0 };
+        }
+        
+        if (nameNormalized == "i")
+        {
+            state.ItalicNestLevel += close ? -1 : 1;
+            return new ChangeStyleElement { Italic = state.ItalicNestLevel > 0 };
+        }
+        
+        if (nameNormalized == "u")
+        {
+            state.UnderlineNestLevel += close ? -1 : 1;
+            return new ChangeStyleElement { Underline = state.UnderlineNestLevel > 0 };
+        }
+
+        // Process color tags
+        if (nameNormalized == "color")
+        {
+            if (close)
+            {
+                if (state.ColorStack.Count == 0)
+                    return new TextElement { Value = token.OriginalValue };
+                state.ColorStack.Pop();
+                return new ChangeStyleElement { Color = state.ColorStack.Count == 0 ? null : state.ColorStack.Peek() };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!TryParseColor(value, out var rgb))
+                return new TextElement { Value = token.OriginalValue };
+            var currentColorAlpha = state.ColorStack.Count == 0
+                ? default
+                : state.ColorStack.Peek();
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb };
+            state.ColorStack.Push(newColorAlpha);
+            return new ChangeStyleElement { Color = newColorAlpha };
+        }
+        
+        // Process alpha tags
+        if (nameNormalized == "alpha")
+        {
+            // Alpha tags can't be closed
+            if (close)
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!TryParseAlpha(value, out var alpha))
+                return new TextElement { Value = token.OriginalValue };
+            var currentColorAlpha = state.ColorStack.Count == 0
+                ? default
+                : state.ColorStack.Peek();
+            var newColorAlpha = currentColorAlpha with { A = alpha };
+            state.ColorStack.Push(newColorAlpha);
+            return new ChangeStyleElement { Color = newColorAlpha };
+        }
+        
+        // Process cspace tags
+        if (nameNormalized == "cspace")
+        {
+            if (close)
+            {
+                if (state.CSpaceStack.Count == 0)
+                    return new TextElement { Value = token.OriginalValue };
+                state.CSpaceStack.Pop();
+                return new CSpaceElement { CSpace = state.CSpaceStack.Count == 0 ? default : state.CSpaceStack.Peek() };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!float.TryParse(value, out var cspace))
+                return new TextElement { Value = token.OriginalValue };
+            
+            state.CSpaceStack.Push(cspace);
+            return new CSpaceElement { CSpace = cspace };
+        }
+
+        if (nameNormalized == "align")
+        {
+            if (close)
+                return new AlignElement { Alignment = null };
+
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!TryGetAlignment(value, out var alignment))
+                return new TextElement { Value = token.OriginalValue };
+
+            return new AlignElement { Alignment = alignment };
+        }
+        
+        return new TextElement { Value = token.OriginalValue };
+    }
+
+    private static bool TryGetAlignment(string value, out HorizontalAlignment horizontalAlignment)
+    {
+        switch (value)
+        {
+            case "left":
+                horizontalAlignment = HorizontalAlignment.Left;
+                return true;
+            case "center":
+                horizontalAlignment = HorizontalAlignment.Center;
+                return true;
+            case "right":
+                horizontalAlignment = HorizontalAlignment.Right;
+                return true;
+            default:
+                horizontalAlignment = default;
+                return false;
+        }
+    }
+    
+    private static (bool Close, string Value) NormalizeName(string name)
+    {
+        name = name.Trim();
+        return name.StartsWith('/') ? (true, name[1..].TrimStart()) : (false, name);
+    }
+
+    private static bool TryDecomposeTag(string tag, [MaybeNullWhen(false)] out string name, out string? value)
+    {
+        var equalsSignIndex = tag.IndexOf('=');
+        if (equalsSignIndex == -1)
+        {
+            name = tag;
+            value = null;
+            return true;
+        }
+        
+        name = tag[..equalsSignIndex];
+        value = tag[(equalsSignIndex + 1)..];
+        
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+        
+        return true;
+    }
+    
+    private static bool TryParseAlpha(string value, out byte alpha)
+    {
+        alpha = default;
+        
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+        
+        if (value.StartsWith('#'))
+            value = value[1..];
+        
+        return byte.TryParse(value, NumberStyles.HexNumber, null, out alpha);
+    }
+
+    private static bool TryParseColor(string hex, out Color3 color)
+    {
+        color = default;
+        
+        if (string.IsNullOrWhiteSpace(hex))
+            return false;
+        
+        if (KnownColors.TryGetValue(hex, out color))
+            return true;
+        
+        if (hex.StartsWith('#'))
+            hex = hex[1..];
+        
+        if (hex.Length != 3 && hex.Length != 6)
+            return false;
+        
+        if (hex.Length == 3)
+            hex = string.Concat(hex.Select(c => new string(c, 2)));
+        
+        return Color3.TryParseHex(hex, out color);
     }
 }
