@@ -224,6 +224,36 @@ public static partial class TagParser
 
             return new AlignElement { Alignment = alignment };
         }
+
+        if (name == "pos")
+        {
+            // Pos tags can't be closed
+            if (close)
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!float.TryParse(value, out var pos))
+                return new TextElement { Value = token.OriginalValue };
+            
+            return new PosElement { Value = pos };
+        }
+        
+        if (name == "size")
+        {
+            // Size tags can't be closed
+            if (close)
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!float.TryParse(value, out var size))
+                return new TextElement { Value = token.OriginalValue };
+            
+            return new SizeElement { Value = size };
+        }
         
         return new TextElement { Value = token.OriginalValue };
     }
