@@ -27,10 +27,21 @@ public record struct Measurement(float Value, Unit Unit)
             return true;
         }
         
-        if (s.EndsWith("em") && float.TryParse(s[..^2].Trim(), out var emValue))
+        if (s.EndsWith("em"))
         {
-            result = new Measurement(emValue, Unit.Em);
-            return true;
+            var sEmValue = s[..^2].Trim();
+
+            if (string.IsNullOrWhiteSpace(sEmValue))
+            {
+                result = new Measurement(1.0f, Unit.Em);
+                return true;
+            }
+            
+            if (float.TryParse(sEmValue, out var emValue))
+            {
+                result = new Measurement(emValue, Unit.Em);
+                return true;
+            }
         }
         
         result = default;
