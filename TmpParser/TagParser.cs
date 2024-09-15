@@ -198,17 +198,17 @@ public static partial class TagParser
                 if (state.CSpaceStack.Count == 0)
                     return new TextElement { Value = token.OriginalValue };
                 state.CSpaceStack.Pop();
-                return new CSpaceElement { CSpace = state.CSpaceStack.Count == 0 ? default : state.CSpaceStack.Peek() };
+                return new CSpaceElement { Value = state.CSpaceStack.Count == 0 ? default : state.CSpaceStack.Peek() };
             }
             
             if (string.IsNullOrWhiteSpace(value))
                 return new TextElement { Value = token.OriginalValue };
             
-            if (!float.TryParse(value, out var cspace))
+            if (!Measurement.TryParse(value, out var cspace))
                 return new TextElement { Value = token.OriginalValue };
             
             state.CSpaceStack.Push(cspace);
-            return new CSpaceElement { CSpace = cspace };
+            return new CSpaceElement { Value = cspace };
         }
 
         if (nameNormalized == "align")
@@ -234,7 +234,7 @@ public static partial class TagParser
             if (string.IsNullOrWhiteSpace(value))
                 return new TextElement { Value = token.OriginalValue };
             
-            if (!float.TryParse(value, out var pos))
+            if (!Measurement.TryParse(value, out var pos))
                 return new TextElement { Value = token.OriginalValue };
             
             return new PosElement { Value = pos };
@@ -249,7 +249,7 @@ public static partial class TagParser
             if (string.IsNullOrWhiteSpace(value))
                 return new TextElement { Value = token.OriginalValue };
             
-            if (!float.TryParse(value, out var size))
+            if (!Measurement.TryParse(value, out var size))
                 return new TextElement { Value = token.OriginalValue };
             
             return new SizeElement { Value = size };
