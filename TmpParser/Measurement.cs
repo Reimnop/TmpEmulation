@@ -33,7 +33,7 @@ public record struct Measurement(float Value, Unit Unit)
 
             if (string.IsNullOrWhiteSpace(sEmValue))
             {
-                result = new Measurement(1.0f, Unit.Em);
+                result = new Measurement(0.0f, Unit.Em);
                 return true;
             }
             
