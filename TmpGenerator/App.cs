@@ -12,10 +12,8 @@ public static class App
         using var freetype = new Library();
         using var face = freetype.NewFace(options.Input, 0);
         face.SetPixelSizes(0, (uint)options.Size);
-
-        const string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ~!@#$%^&*()_+-={}[]:\";'<>?,./\\|";
         
-        var characterToGlyphId = characters
+        var characterToGlyphId = options.Characters
             .ToDictionary(x => x, x => (int)face.GetCharIndex(x));
         var glyphIdToGlyph = characterToGlyphId.Values
             .Select(x => GetGlyph(x, face, options.Padding, options.Range))

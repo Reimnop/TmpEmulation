@@ -9,7 +9,10 @@ public class Options
     
     [Option('o', "output", Required = true, HelpText = "Output atlas file path.")]
     public required string Output { get; set; }
-    
+
+    [Option('c', "characters", Required = true, HelpText = "Characters present in the output font.")]
+    public required string Characters { get; set; }
+
     [Option('s', "size", Required = false, Default = 32, HelpText = "Font size.")]
     public required int Size { get; set; }
     
