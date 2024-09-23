@@ -86,7 +86,7 @@ public static partial class TagParser
 
     private static IEnumerable<IElement> SplitTextElementToLines(TextElement element)
     {
-        var lines = element.Value.Split('\n');
+        var lines = element.Value.Split(['\n', (char) 11]);
         for (var i = 0; i < lines.Length; i++)
         {
             yield return new TextElement { Value = lines[i] };
