@@ -145,8 +145,7 @@ public static partial class TagParser
             state.UnderlineNestLevel += close ? -1 : 1;
             return new StyleElement { Underline = state.UnderlineNestLevel > 0 };
         }
-
-        // Process color tags
+        
         if (nameNormalized == "color")
         {
             if (close)
@@ -170,7 +169,6 @@ public static partial class TagParser
             return new StyleElement { Color = newColorAlpha };
         }
         
-        // Process alpha tags
         if (nameNormalized == "alpha")
         {
             // Alpha tags can't be closed
@@ -190,7 +188,6 @@ public static partial class TagParser
             return new StyleElement { Color = newColorAlpha };
         }
         
-        // Process cspace tags
         if (nameNormalized == "cspace")
         {
             if (close)
@@ -225,7 +222,7 @@ public static partial class TagParser
             return new AlignElement { Alignment = alignment };
         }
 
-        if (name == "pos")
+        if (nameNormalized == "pos")
         {
             // Pos tags can't be closed
             if (close)
@@ -240,7 +237,7 @@ public static partial class TagParser
             return new PosElement { Value = pos };
         }
         
-        if (name == "size")
+        if (nameNormalized == "size")
         {
             if (close)
             {
@@ -259,7 +256,7 @@ public static partial class TagParser
             return new SizeElement { Value = size };
         }
 
-        if (name == "line-height")
+        if (nameNormalized == "line-height")
         {
             if (close)
             {
@@ -279,7 +276,32 @@ public static partial class TagParser
             return new LineHeightElement { Value = lineHeight };
         }
 
-        if (name == "font")
+        if (nameNormalized == "mark")
+        {
+            if (close)
+            {
+                var oldColor = state.MarkStack.Count == 0
+                    ? default
+                    : state.ColorStack.Pop();
+                
+                return new MarkElement { Value = oldColor };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!TryParseColor(value, out var rgb, out var alpha))
+                return new TextElement { Value = token.OriginalValue };
+            
+            var currentColorAlpha = state.MarkStack.Count == 0
+                ? default
+                : state.MarkStack.Peek();
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb, A = alpha ?? currentColorAlpha.A };
+            state.MarkStack.Push(newColorAlpha);
+            return new MarkElement { Value = newColorAlpha };
+        }
+
+        if (nameNormalized == "font")
         {
             if (close)
             {
@@ -361,7 +383,7 @@ public static partial class TagParser
         return byte.TryParse(value, NumberStyles.HexNumber, null, out alpha);
     }
 
-    private static bool TryParseColor(string hex, out Color3 color, out byte? alpha)
+    private static bool TryParseColor(string hex, out Color3 color, out int? alpha)
     {
         color = default;
         alpha = default;

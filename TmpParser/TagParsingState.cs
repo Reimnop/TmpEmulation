@@ -8,5 +8,6 @@ public class TagParsingState
     public Stack<Measurement> CSpaceStack { get; } = [];
     public Stack<Measurement> LineHeightStack { get; } = [];
     public Stack<ColorAlpha> ColorStack { get; } = [];
+    public Stack<ColorAlpha> MarkStack { get; } = [];
     public Stack<string> FontStack { get; } = [];
 }
