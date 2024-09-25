@@ -357,7 +357,7 @@ public static partial class TagParser
         if (hex.Length == 3 || hex.Length == 4)
             hex = string.Concat(hex.Select(c => new string(c, 2)));
         
-        if (!Color3.TryParseHex(hex, out color))
+        if (!Color3.TryParseHex(hex[..6], out color))
             return false;
 
         if (hex.Length == 8)
