@@ -296,7 +296,7 @@ public static partial class TagParser
             var currentColorAlpha = state.MarkStack.Count == 0
                 ? default
                 : state.MarkStack.Peek();
-            var newColorAlpha = currentColorAlpha with { Rgb = rgb, A = alpha ?? currentColorAlpha.A };
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb, A = alpha ?? 255 };
             state.MarkStack.Push(newColorAlpha);
             return new MarkElement { Value = newColorAlpha };
         }
