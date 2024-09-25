@@ -18,7 +18,7 @@ public static partial class TagParser
         ["yellow"] = Color3.ParseHex("FFFF00"),
     };
     
-    [GeneratedRegex(@"<([^<>\n]+?)>")]
+    [GeneratedRegex(@"<([^<>]+?)>")]
     private static partial Regex GetTagRegex();
 
     public static IEnumerable<IToken> EnumerateTokens(string text)
