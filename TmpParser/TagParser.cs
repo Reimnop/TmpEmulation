@@ -242,9 +242,13 @@ public static partial class TagParser
         
         if (name == "size")
         {
-            // Size tags can't be closed
             if (close)
-                return new TextElement { Value = token.OriginalValue };
+            {
+                var oldSize = state.CSpaceStack.Count == 0
+                    ? new Measurement(1.0f, Unit.Em)
+                    : state.CSpaceStack.Pop();
+                return new SizeElement { Value = oldSize };
+            }
             
             if (string.IsNullOrWhiteSpace(value))
                 return new TextElement { Value = token.OriginalValue };
@@ -253,6 +257,25 @@ public static partial class TagParser
                 return new TextElement { Value = token.OriginalValue };
             
             return new SizeElement { Value = size };
+        }
+
+        if (name == "line-height")
+        {
+            if (close)
+            {
+                var oldLineHeight = state.LineHeightStack.Count == 0
+                    ? new Measurement(1.0f, Unit.Em)
+                    : state.LineHeightStack.Pop();
+                return new LineHeightElement { Value = oldLineHeight };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!Measurement.TryParse(value, out var lineHeight))
+                return new TextElement { Value = token.OriginalValue };
+            
+            state.LineHeightStack.Push(lineHeight);
         }
 
         if (name == "font")
