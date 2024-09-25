@@ -276,6 +276,7 @@ public static partial class TagParser
                 return new TextElement { Value = token.OriginalValue };
             
             state.LineHeightStack.Push(lineHeight);
+            return new LineHeightElement { Value = lineHeight };
         }
 
         if (name == "font")
