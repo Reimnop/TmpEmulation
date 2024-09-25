@@ -107,12 +107,12 @@ public static partial class TagParser
         // Special case for #<hex> tags
         if (tagValue.StartsWith("#"))
         {
-            if (!TryParseColor(tagValue, out var rgb))
+            if (!TryParseColor(tagValue, out var rgb, out var alpha))
                 return new TextElement { Value = token.OriginalValue };
             var currentColorAlpha = state.ColorStack.Count == 0
                 ? default
                 : state.ColorStack.Peek();
-            var newColorAlpha = currentColorAlpha with { Rgb = rgb };
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb, A = alpha ?? currentColorAlpha.A };
             state.ColorStack.Push(newColorAlpha);
             return new StyleElement { Color = newColorAlpha };
         }
@@ -160,12 +160,12 @@ public static partial class TagParser
             if (string.IsNullOrWhiteSpace(value))
                 return new TextElement { Value = token.OriginalValue };
             
-            if (!TryParseColor(value, out var rgb))
+            if (!TryParseColor(value, out var rgb, out var alpha))
                 return new TextElement { Value = token.OriginalValue };
             var currentColorAlpha = state.ColorStack.Count == 0
                 ? default
                 : state.ColorStack.Peek();
-            var newColorAlpha = currentColorAlpha with { Rgb = rgb };
+            var newColorAlpha = currentColorAlpha with { Rgb = rgb, A = alpha ?? currentColorAlpha.A };
             state.ColorStack.Push(newColorAlpha);
             return new StyleElement { Color = newColorAlpha };
         }
@@ -337,9 +337,10 @@ public static partial class TagParser
         return byte.TryParse(value, NumberStyles.HexNumber, null, out alpha);
     }
 
-    private static bool TryParseColor(string hex, out Color3 color)
+    private static bool TryParseColor(string hex, out Color3 color, out byte? alpha)
     {
         color = default;
+        alpha = default;
         
         if (string.IsNullOrWhiteSpace(hex))
             return false;
@@ -350,12 +351,22 @@ public static partial class TagParser
         if (hex.StartsWith('#'))
             hex = hex[1..];
         
-        if (hex.Length != 3 && hex.Length != 6)
+        if (hex.Length != 3 && hex.Length != 4 && hex.Length != 6 && hex.Length != 8)
             return false;
         
-        if (hex.Length == 3)
+        if (hex.Length == 3 || hex.Length == 4)
             hex = string.Concat(hex.Select(c => new string(c, 2)));
         
-        return Color3.TryParseHex(hex, out color);
+        if (!Color3.TryParseHex(hex, out color))
+            return false;
+
+        if (hex.Length == 8)
+        {
+            if (!byte.TryParse(hex[6..8], NumberStyles.HexNumber, null, out var a))
+                return false;
+            alpha = a;
+        }
+        
+        return true;
     }
 }
