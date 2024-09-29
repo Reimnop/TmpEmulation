@@ -256,6 +256,24 @@ public static partial class TagParser
             return new SizeElement { Value = size };
         }
 
+        if (nameNormalized == "voffset")
+        {
+            if (close)
+            {
+                state.VOffset = new Measurement(0.0f, Unit.Em);
+                return new VOffsetElement { Value = state.VOffset };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!Measurement.TryParse(value, out var voffset))
+                return new TextElement { Value = token.OriginalValue };
+            
+            state.VOffset = voffset;
+            return new VOffsetElement { Value = voffset };
+        }
+
         if (nameNormalized == "line-height")
         {
             if (close)
