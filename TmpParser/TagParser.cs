@@ -335,6 +335,42 @@ public static partial class TagParser
             state.FontStack.Push(value);
             return new FontElement { Value = value };
         }
+
+        if (nameNormalized is "uppercase" or "allcaps")
+        {
+            if (close)
+            {
+                state.Capitalization &= ~Capitalization.Uppercase;
+                return new CapitalizationElement { Value = state.Capitalization };
+            }
+            
+            state.Capitalization |= Capitalization.Uppercase;
+            return new CapitalizationElement { Value = state.Capitalization };
+        }
+        
+        if (nameNormalized == "lowercase")
+        {
+            if (close)
+            {
+                state.Capitalization &= ~Capitalization.Lowercase;
+                return new CapitalizationElement { Value = state.Capitalization };
+            }
+            
+            state.Capitalization |= Capitalization.Lowercase;
+            return new CapitalizationElement { Value = state.Capitalization };
+        }
+        
+        if (nameNormalized == "smallcaps")
+        {
+            if (close)
+            {
+                state.Capitalization &= ~Capitalization.SmallCaps;
+                return new CapitalizationElement { Value = state.Capitalization };
+            }
+            
+            state.Capitalization |= Capitalization.SmallCaps;
+            return new CapitalizationElement { Value = state.Capitalization };
+        }
         
         return new TextElement { Value = token.OriginalValue };
     }
