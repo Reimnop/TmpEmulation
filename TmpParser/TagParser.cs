@@ -278,8 +278,8 @@ public static partial class TagParser
         {
             if (close)
             {
-                var oldLineHeight = state.LineHeightStack.Count == 0
-                    ? new Measurement(1.0f, Unit.Em)
+                Measurement? oldLineHeight = state.LineHeightStack.Count == 0
+                    ? null
                     : state.LineHeightStack.Pop();
                 return new LineHeightElement { Value = oldLineHeight };
             }
