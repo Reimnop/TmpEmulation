@@ -70,6 +70,6 @@ public static class TmpWrite
         {
             ["width"] = atlas.Width,
             ["height"] = atlas.Height,
-            ["data"] = new SsbfByteArray(MemoryMarshal.Cast<float, byte>(atlas.Data)),
+            ["data"] = new SsbfByteArray(MemoryMarshal.Cast<TmpAtlasPixel, byte>(atlas.Data)),
         };
 }

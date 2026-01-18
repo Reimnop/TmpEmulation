@@ -72,7 +72,7 @@ public static class TmpRead
         return new TmpAtlas(
             ssbfObject["width"].Get<int>(),
             ssbfObject["height"].Get<int>(),
-            MemoryMarshal.Cast<byte, float>(data).ToArray()
+            MemoryMarshal.Cast<byte, TmpAtlasPixel>(data).ToArray()
         );
     }
 }
