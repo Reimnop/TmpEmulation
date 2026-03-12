@@ -208,6 +208,26 @@ public static partial class TagParser
             return new CSpaceElement { Value = cspace };
         }
 
+        if (nameNormalized == "rotate")
+        {
+            if (close)
+            {
+                if (state.RotateStack.Count == 0)
+                    return new TextElement { Value = token.OriginalValue };
+                state.RotateStack.Pop();
+                return new RotateElement { Angle = state.RotateStack.Count == 0 ? 0f : state.RotateStack.Peek() };
+            }
+            
+            if (string.IsNullOrWhiteSpace(value))
+                return new TextElement { Value = token.OriginalValue };
+            
+            if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var angle))
+                return new TextElement { Value = token.OriginalValue };
+            
+            state.RotateStack.Push(angle);
+            return new RotateElement { Angle = angle };
+        }
+
         if (nameNormalized == "align")
         {
             if (close)

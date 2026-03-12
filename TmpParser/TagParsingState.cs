@@ -11,5 +11,6 @@ public class TagParsingState
     public Stack<Measurement> LineHeightStack { get; } = [];
     public Stack<ColorAlpha> ColorStack { get; } = [];
     public Stack<ColorAlpha> MarkStack { get; } = [];
+    public Stack<float> RotateStack { get; } = [];
     public Stack<string> FontStack { get; } = [];
 }
